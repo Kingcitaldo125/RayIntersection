@@ -1,14 +1,16 @@
 import pygame
 import time
 
-def check_intersect(o, d, u, c, rad_squared, check_area = 10):	
+def check_intersect(o, d, u, c, rad_squared, interval = 10):	
 	x = o + d*u
 
 	svec_prod = x - c
 
 	dprod = svec_prod.dot(svec_prod)
-
-	if dprod >= rad_squared - check_area and dprod <= rad_squared + check_area:
+	
+	# TBD: Better way to check the dot product against rad_squared?
+	# Many valid intersection points were omitted without the interval
+	if dprod >= rad_squared - interval and dprod <= rad_squared + interval:
 		#print("o",o)
 		#print("d",d)
 		#print("u",u)
@@ -20,12 +22,12 @@ def check_intersect(o, d, u, c, rad_squared, check_area = 10):
 
 	return None
 
-def calc_intersect_sphere(o, u, c, rad_squared):
+def calc_intersect_sphere(o, u, c, rad):
 	points = []
 	d = 1
 
-	while d < c.length() + (rad_squared)**0.5:
-		point = check_intersect(o, d, u, c, rad_squared)
+	while d < c.length() + rad:
+		point = check_intersect(o, d, u, c, rad**2)
 
 		if point:
 			points.append(point)
@@ -54,8 +56,6 @@ ray_dir = ray_dir.normalize()
 ray_dir_draw = pygame.Vector2(ray_dir.x, ray_dir.y)
 ray_dir_draw.scale_to_length(winx * winy)
 
-dmag = 0
-
 points = None
 
 done = False
@@ -80,7 +80,7 @@ while not done:
 			ray_dir_draw = pygame.Vector2(ray_dir.x, ray_dir.y)
 			ray_dir_draw.scale_to_length(winx * winy)
 
-			points = calc_intersect_sphere(ray_start, ray_dir, sphere_vec, sphere_rad**2)
+			points = calc_intersect_sphere(ray_start, ray_dir, sphere_vec, sphere_rad)
 			if len(points) > 2:
 				points = [points[0],points[-1]]
 
@@ -96,5 +96,6 @@ while not done:
 			pygame.draw.circle(screen, (255,255,255), (int(p.x), int(p.y)), 3)
 
 	pygame.display.flip()
+	time.sleep(0.05)
 
 pygame.display.quit()
